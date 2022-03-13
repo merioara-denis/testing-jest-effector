@@ -1,0 +1,1 @@
+export { factoryStore } from "./factory";
