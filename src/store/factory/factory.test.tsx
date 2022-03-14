@@ -1,25 +1,32 @@
+import { renderHook, act } from "@testing-library/react-hooks";
 import { factory } from "./factory";
 
 describe("testing", () => {
   it("Тестирование изменение значения в store", () => {
     const storeContext = factory();
 
+    const getSelectedState = () => {
+      return renderHook<
+        unknown,
+        ReturnType<typeof storeContext.hooks.useSelected>
+      >(() => storeContext.hooks.useSelected()).result.current;
+    };
+
     /** Текущее значение */
-    const beforeChange = storeContext.store.getState().selected;
-    // TODO: Надо удалить консоль
-    console.log("beforeChange", beforeChange);
+    const beforeChangeOnState = storeContext.store.getState().selected;
+    const beforeChangeOnHook = getSelectedState();
+    expect(beforeChangeOnState).toBe(beforeChangeOnHook);
 
-    storeContext.store.updates.watch(() => {
-      // получение
-      /** Новое значение */
-      const afterChange = storeContext.store.getState().selected;
-      // TODO: Надо удалить консоль
-      console.log("afterChange", afterChange);
-
-      // Выполнение теста на сравнение значений до и после
-      expect(beforeChange).not.toBe(afterChange);
+    // Изменение состояния
+    act(() => {
+      storeContext.actions.setSelected(2);
     });
 
-    storeContext.actions.setSelected(2);
+    // Новое значение
+    const afterChangeOnState = storeContext.store.getState().selected;
+    const afterChangeOnHook = getSelectedState();
+
+    expect(afterChangeOnState).toBe(afterChangeOnHook);
+    expect(beforeChangeOnHook).not.toBe(afterChangeOnHook);
   });
 });
